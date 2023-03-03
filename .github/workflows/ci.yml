@@ -1,0 +1,44 @@
+# 這個 Action 的名子
+name: CI Workflow
+
+# 要在哪個 branch 上面
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+  
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+				# go env
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+				# check repo code
+
+      - name: Fetch required Go modules
+        run:  go mod download
+				# download required go module 
+
+      - name: Build
+        run:  go build -v 
+				# build 
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          tags: ${{ github.event.repository.name }}:latest, ${{ github.repository }}:latest
+				# build docker image
+
+      - name: Run functional tests
+        run:  go test -v
+				# unit test
